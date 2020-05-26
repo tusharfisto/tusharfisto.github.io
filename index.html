@@ -3,18 +3,287 @@
   <script src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+  <style>
+  .taskarea{
+border:2px solid gray;
+height:400px;
+border-radius: 10px;
+overflow: auto;
+}
+  </style>
   <body>
   
-    <div id="mydiv"></div>
+    <div id="root"></div>
 
     <script type="text/babel">
-      class Hello extends React.Component {
-        render() {
-          return <h1>Hello World!</h1>
-        }
-      }
+      
 
-      ReactDOM.render(<Hello />, document.getElementById('mydiv'))
+class BasicBoot extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { tasks: 0 ,tasks_info:new Array(),default_view:0,completed:0}
+        this.clearAll=this.clearAll.bind(this);
+        this.checkVals=this.checkVals.bind(this);
+        this.marktask=this.marktask.bind(this);
+        this.change_view_completed = this.change_view_completed.bind(this);
+        this.change_view_all = this.change_view_all.bind(this);
+
+    }
+    change_view_all = () => {
+        
+        var k = document.getElementsByTagName("li")
+        var kp = k[0];
+        kp.setAttribute("class", "active")
+        k[1].setAttribute("class", "")
+        console.log(this.state.default_view)
+        this.setState({default_view:0})
+
+        console.log(this.state.default_view)
+
+    }
+
+change_view_completed=()=>{
+  
+    var k=document.getElementsByTagName("li")
+    var kp=k[1];
+    kp.setAttribute("class","active")
+    k[0].setAttribute("class","")
+    console.log(this.state.default_view)
+    this.setState({default_view:1})
+    console.log(this.state.default_view)
+
+}
+
+    clearAll=()=>{
+        // alert("ser");
+        if(this.state.tasks==0)
+        {
+            alert("Nothing in the box to clear")
+         }
+         else{
+        //document.getElementById("your_tasks").innerHTML = '';
+        this.setState({tasks:0,tasks_info:new Array(),completed:0})
+    
+        }
+    }
+
+    marktask=(event)=>{
+        event = event || window.event; // IE
+        var target = event.target || event.srcElement; // IE
+
+        var id = target.id;
+        var i=0;
+        var comp_count=parseInt(this.state.completed);
+        for(i=0;i<this.state.tasks_info.length;i++)
+        {   
+            if (this.state.tasks_info[i].unique_id===id)
+            {
+                if(this.state.tasks_info[i].iscompleted==1)
+                    {
+                        this.state.tasks_info[i].iscompleted = 0
+                        comp_count+=1;
+                        this.setState({completed:comp_count})
+                    }
+                else{
+                    comp_count -= 1;
+                    this.setState({ completed: comp_count })
+                    this.state.tasks_info[i].iscompleted = 1
+                }
+
+             
+                this.setState({tasks_info:this.state.tasks_info })
+                break;
+            }
+
+        }
+        console.log(this.state.tasks_info)
+        
+
+    }
+
+   
+
+    checkVals=(event)=>{
+        var intext= document.getElementById("task_info").value;
+
+        
+        var m = document.getElementById("your_tasks")
+        if(intext.length==0)
+        {
+            alert("Kuch to dal andar madarchod");
+            event.preventDefault();
+        }
+        else
+        {
+
+            var k = "  ";
+            k += document.getElementById("task_info").value;
+            var today_date=new Date();
+            var min_ele="0";
+            if(today_date.getMinutes()<10)
+            {
+                min_ele+=today_date.getMinutes()
+            k+="..........(added on:-"+today_date.getDate()+"/"+today_date.getMonth()+"/"+today_date.getFullYear()+" "+today_date.getHours()+":"+min_ele+")";
+            }else{
+                min_ele += today_date.getMinutes()
+                k += "..........(added on:-" + today_date.getDate() + "/" + today_date.getMonth() + "/" + today_date.getFullYear() + " " + today_date.getHours() + ":" + today_date.getMinutes()+ ")";
+            }
+            // node.appendChild(checkbox)
+            //m.prepend(<Ano />)
+            event.preventDefault();
+            var a=new Object()
+            a.task_detail=k;
+            a.iscompleted=0;
+            var nid="task"
+            nid+=(this.state.tasks+1);
+            a.unique_id=nid;
+            console.log(a)
+            this.state.tasks_info.push(a)
+            var inc=parseInt(this.state.tasks)
+            console.log(inc)
+            inc+=1;
+            console.log(inc)
+            this.setState({tasks:inc})
+            // console.log(this.state.tasks)
+            // console.log(this.state.tasks_info)
+            // console.log(this.state.tasks)
+
+            document.getElementById("task_info").value="";
+            
+            // m.append(newTask);
+        }
+        // Incoming
+    }
+
+    render() {
+
+    return (
+    
+    <div>
+        <br />
+        <div class="row">
+        <div class="col-sm-4"></div>
+    
+                <div class="col-sm-8">
+
+    <form onSubmit={this.checkVals}>
+                <label for="task_info" class="form-control-user">Enter Todo Task:</label>
+                        &nbsp;&nbsp;<input type="text" className="form-control-user" id="task_info"  />
+                        &nbsp;&nbsp;<input type="submit" class="btn btn-success  form-control-user" value="Add task" />
+    </form>
+            </div>
+
+    </div>
+                      <br />
+            <br />
+
+    <div class="row">
+                <div class="col-sm-4"></div>
+    <div class="col-sm-4 taskarea">
+        <div id="your_tasks">
+
+        {
+        
+        this.state.tasks === 0 ?
+                (<h3>No tasks here</h3>) 
+        :
+            this.state.default_view === 0 ?
+                                    
+                                    (this.state.tasks_info.map((num, index) => (
+
+                                            num.iscompleted==1?
+                                            <div><h4><input type="checkbox" checked id={"task" + (index + 1)} onClick={this.marktask} />{num.task_detail}<hr /></h4></div>
+                                            : <div><h4><input type="checkbox" id={"task" + (index + 1)} onClick={this.marktask} />{num.task_detail}<hr /></h4></div>
+                                        ))
+                                    ) 
+            :
+               this.state.completed==0 ?
+                    <h4>No completed Tasks</h4>
+                                        
+                :                     (this.state.tasks_info.map((num, index) => (
+                                        num.iscompleted===1?
+                                        <div><h4>{num.task_detail}<hr /></h4></div>:null
+                                    ))
+                                    ) 
+        }
+{/*                     
+                    {this.state.tasks === 0 ? (<div id="your_tasks"><h3>No tasks here</h3></div>) : this.state.default_view == 0 ? (<div id="your_tasks">{this.state.tasks_info.map((num, index) => (
+
+                        <div><h4><input type="checkbox" id={"task" + (index + 1)} onClick={this.marktask} />{num.task_detail}<hr /></h4></div>
+                    ))}</div>) : (<div id="your_tasks">{this.state.tasks_info.map((num, index) => (
+
+                    <div><h4><input type="checkbox" id={"task" + (index + 1)} onClick={this.marktask} />{num.task_detail}<hr /></h4></div>)} */}
+                        
+
+
+    </div>
+    </div>
+        
+                <div class="col-sm-4"></div>
+                
+    </div>  
+    <br />
+            <div class="row">
+                <div class="col-sm-4"></div>
+                <div class="col-sm-4">
+                    <div class="row">
+                        <div class="col-sm-4">
+                <input type="button" value="clear All tasks" onClick={this.clearAll} class="btn btn-danger  form-control-user" />
+                </div>
+                        <div class="col-sm-8">
+                    {/* s<h4>Total tasks:{this.state.tasks}</h4> */}
+                            <ul class="nav nav-pills">
+                                <li class="active"><a href="#" onClick={this.change_view_all}>All Tasks</a></li>
+                                <li><a href="#" onClick={this.change_view_completed}>Completed</a></li>
+                                
+                            </ul>
+                    </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+        )
+    }
+
+}
+
+
+class Ano extends BasicBoot {
+    constructor(props) {
+        super(props);
+    }
+    render() {
+        return (
+            <div>
+                <input type="checkbox" />
+                {this.state.tasks}
+            </div>
+        )
+    }
+
+}
+
+
+
+class Todo extends React.Component{
+    constructor(props){
+        super(props);
+        
+    }
+    render(){
+        return( <BasicBoot />
+        
+
+        )
+    }
+
+}
+
+
+
+ReactDOM.render(<Todo />,document.getElementById("root"))
+
     </script>
   </body>
 </html>
